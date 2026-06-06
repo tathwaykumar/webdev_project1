@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width,
+initial-scale=1.0">
+
+    <title>Profile</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="profile-container">
+
+        <div class="profile-card">
+
+            <h1>
+                My Profile
+            </h1>
+
+            <!-- PROFILE IMAGE -->
+
+            <img id="previewImage" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-pic">
+
+            <input type="file" id="imageInput" accept="image/*">
+
+            <!-- NAME -->
+
+            <input type="text" id="profileName" placeholder="Name">
+
+            <!-- EMAIL -->
+
+            <input type="email" id="profileEmail" disabled>
+
+            <!-- PASSWORD -->
+
+            <input type="password" id="profilePassword" placeholder="New Password">
+
+            <button onclick="saveProfile()">
+                Save Changes
+            </button>
+
+            <button onclick="goDashboard()">
+                Back to Dashboard
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        let currentUser =
+            JSON.parse(
+                localStorage.getItem(
+                    "currentUser"
+                )
+            );
+
+        if (!currentUser) {
+
+            window.location.href =
+                "index.html";
+        }
+
+
+        // LOAD USER DATA
+
+        document
+            .getElementById(
+                "profileName"
+            )
+            .value =
+            currentUser.name;
+
+
+        document
+            .getElementById(
+                "profileEmail"
+            )
+            .value =
+            currentUser.email;
+
+
+        if (currentUser.image) {
+
+            document
+                .getElementById(
+                    "previewImage"
+                )
+                .src =
+                currentUser.image;
+        }
+
+
+        // IMAGE UPLOAD
+
+        document
+            .getElementById(
+                "imageInput"
+            )
+            .addEventListener(
+                "change",
+
+                function (event) {
+
+                    let file =
+                        event.target.files[0];
+
+                    if (file) {
+
+                        let reader =
+                            new FileReader();
+
+                        reader.onload =
+                            function () {
+
+                                document
+                                    .getElementById(
+                                        "previewImage"
+                                    )
+                                    .src =
+                                    reader.result;
+
+                                currentUser.image =
+                                    reader.result;
+                            };
+
+                        reader.readAsDataURL(
+                            file
+                        );
+                    }
+                }
+            );
+
+
+        // SAVE PROFILE
+
+        function saveProfile() {
+
+            let users =
+                JSON.parse(
+                    localStorage.getItem(
+                        "users"
+                    )
+                )
+                || [];
+
+            let newName =
+                document
+                    .getElementById(
+                        "profileName"
+                    )
+                    .value;
+
+            let newPassword =
+                document
+                    .getElementById(
+                        "profilePassword"
+                    )
+                    .value;
+
+
+            // UPDATE CURRENT USER
+
+            currentUser.name =
+                newName;
+
+            if (
+                newPassword !== ""
+            ) {
+                currentUser.password =
+                    newPassword;
+            }
+
+
+            // UPDATE USERS ARRAY
+
+            users =
+                users.map(user => {
+
+                    if (
+                        user.email
+                        ===
+                        currentUser.email
+                    ) {
+
+                        return currentUser;
+                    }
+
+                    return user;
+                });
+
+
+            // SAVE BACK
+
+            localStorage.setItem(
+                "users",
+                JSON.stringify(users)
+            );
+
+            localStorage.setItem(
+                "currentUser",
+                JSON.stringify(
+                    currentUser
+                )
+            );
+
+            alert(
+                "Profile Updated!"
+            );
+
+            window.location.href =
+                "dashboard.html";
+        }
+
+
+        // BACK
+
+        function goDashboard() {
+
+            window.location.href =
+                "dashboard.html";
+        }
+
+    </script>
+
+</body>
+
+</html>

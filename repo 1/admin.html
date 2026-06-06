@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,
+initial-scale=1.0">
+
+    <title>Admin Panel</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+
+        <!-- NAVBAR -->
+
+        <div class="navbar">
+
+            <h2>
+                Admin Panel
+            </h2>
+
+            <div>
+
+                <button onclick="goDashboard()">
+                    Dashboard
+                </button>
+
+                <button onclick="logout()">
+                    Logout
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- TOTAL USERS -->
+
+        <div class="dashboard-card">
+
+            <h1>
+                Total Users:
+                <span id="userCount">
+                    0
+                </span>
+            </h1>
+
+        </div>
+
+
+        <!-- SEARCH -->
+
+        <div class="users-card">
+
+            <input type="text" id="searchUser" placeholder="Search user..." onkeyup="searchUsers()">
+
+        </div>
+
+
+        <!-- USERS -->
+
+        <div class="users-card">
+
+            <h2>
+                Registered Users
+            </h2>
+
+            <div id="usersList">
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // ADMIN CHECK
+
+        let currentUser =
+            JSON.parse(
+                localStorage.getItem(
+                    "currentUser"
+                )
+            );
+
+        if (
+            !currentUser
+            ||
+            currentUser.email
+            !==
+            "admin@gmail.com"
+        ) {
+
+            window.location.href =
+                "dashboard.html";
+        }
+
+
+        // LOAD USERS
+
+        let users =
+            JSON.parse(
+                localStorage.getItem(
+                    "users"
+                )
+            )
+            || [];
+
+        document
+            .getElementById(
+                "userCount"
+            )
+            .innerText =
+            users.length;
+
+
+        function displayUsers(
+            filteredUsers
+        ) {
+
+            let html = "";
+
+            filteredUsers.forEach(
+                (user, index) => {
+
+                    html +=
+                        `
+<div
+style="
+padding:15px;
+background:
+rgba(255,255,255,0.1);
+margin-top:12px;
+border-radius:12px;
+color:white;
+">
+
+<b>Name:</b>
+${user.name}
+
+<br>
+
+<b>Email:</b>
+${user.email}
+
+<br><br>
+
+<button
+onclick=
+"deleteUser(${index})">
+
+Delete
+</button>
+
+</div>
+`;
+                });
+
+            document
+                .getElementById(
+                    "usersList"
+                )
+                .innerHTML =
+                html;
+        }
+
+
+        displayUsers(users);
+
+
+        // SEARCH
+
+        function searchUsers() {
+
+            let search =
+                document
+                    .getElementById(
+                        "searchUser"
+                    )
+                    .value
+                    .toLowerCase();
+
+            let filtered =
+                users.filter(user =>
+
+                    user.name
+                        .toLowerCase()
+                        .includes(search)
+
+                    ||
+
+                    user.email
+                        .toLowerCase()
+                        .includes(search)
+
+                );
+
+            displayUsers(filtered);
+        }
+
+
+        // DELETE USER
+
+        function deleteUser(index) {
+
+            let confirmDelete =
+                confirm(
+                    "Delete this user?"
+                );
+
+            if (!confirmDelete) {
+                return;
+            }
+
+            users.splice(
+                index,
+                1
+            );
+
+            localStorage.setItem(
+                "users",
+                JSON.stringify(users)
+            );
+
+            location.reload();
+        }
+
+
+        // NAVIGATION
+
+        function goDashboard() {
+
+            window.location.href =
+                "dashboard.html";
+        }
+
+
+        // LOGOUT
+
+        function logout() {
+
+            localStorage.removeItem(
+                "currentUser"
+            );
+
+            window.location.href =
+                "index.html";
+        }
+
+    </script>
+
+</body>
+
+</html>

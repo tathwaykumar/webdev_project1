@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width,
+initial-scale=1.0">
+
+    <title>Advanced Auth App</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- LEFT PANEL -->
+
+        <div class="left-panel">
+2
+            <h1>Welcome Back</h1>
+
+            <p>
+                Advanced authentication
+                website with multiple users,
+                dashboard, profile page,
+                forgot password and more.
+            </p>
+
+        </div>
+
+
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+
+            <!-- LOGIN -->
+
+            <div id="loginForm" class="form active">
+
+                <h2>
+                    Login
+                </h2>
+
+                <input type="email" id="loginEmail" placeholder="Email">
+
+                <div class="password-box">
+
+                    <input type="password" id="loginPassword" placeholder="Password">
+
+                    <span class="eye" onclick="togglePassword(
+                'loginPassword'
+                )">
+                        👁️
+                    </span>
+
+                </div>
+
+                <p class="forgot-link" onclick="showForgotPassword()">
+                    Forgot Password?
+                </p>
+
+                <button onclick="login()">
+                    Login
+                </button>
+
+                <p class="switch">
+
+                    No account?
+
+                    <span onclick="showSignup()">
+                        Sign Up
+                    </span>
+
+                </p>
+
+            </div>
+
+
+            <!-- SIGNUP -->
+
+            <div id="signupForm" class="form">
+
+                <h2>
+                    Create Account
+                </h2>
+
+                <input type="text" id="signupName" placeholder="Full Name">
+
+                <input type="email" id="signupEmail" placeholder="Email">
+
+                <div class="password-box">
+
+                    <input type="password" id="signupPassword" placeholder="Password" onkeyup="checkPassword()">
+
+                    <span class="eye" onclick="togglePassword(
+                'signupPassword'
+                )">
+                        👁️
+                    </span>
+
+                </div>
+
+                <div id="passwordStrength">
+
+                    Password Strength
+
+                </div>
+
+                <button onclick="signup()">
+
+                    Create Account
+
+                </button>
+
+                <p class="switch">
+
+                    Already have account?
+
+                    <span onclick="showLogin()">
+
+                        Login
+
+                    </span>
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="toast"></div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

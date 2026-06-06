@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width,
+initial-scale=1.0">
+
+    <title>Chat</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="chat-container">
+
+        <!-- USERS PANEL -->
+
+        <div class="chat-users">
+
+            <h2>
+                Chats
+            </h2>
+
+            <div id="chatUsersList">
+
+            </div>
+
+        </div>
+
+
+        <!-- CHAT PANEL -->
+
+        <div class="chat-box">
+
+            <div class="chat-header">
+
+                <h2 id="chatTitle">
+
+                    Select User
+
+                </h2>
+
+            </div>
+
+
+            <div id="messages" class="messages">
+
+            </div>
+
+
+            <div class="chat-input-box">
+
+                <input type="text" id="messageInput" placeholder="Type message...">
+
+                <button onclick="sendMessage()">
+
+                    Send
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // CURRENT USER
+
+        let currentUser =
+            JSON.parse(
+                localStorage.getItem(
+                    "currentUser"
+                )
+            );
+
+        if (!currentUser) {
+
+            window.location.href =
+                "index.html";
+        }
+
+
+        // USERS
+
+        let users =
+            JSON.parse(
+                localStorage.getItem(
+                    "users"
+                )
+            )
+            || [];
+
+        users =
+            users.filter(
+                user =>
+                    user.email !==
+                    currentUser.email
+            );
+
+
+        let selectedUser =
+            null;
+
+
+        // FORMAT TIME
+
+        function formatTime(timestamp) {
+
+            let date =
+                new Date(timestamp);
+
+            return date.toLocaleTimeString(
+                [],
+                {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }
+            );
+        }
+
+
+        // LOAD USERS
+
+        function loadUsers() {
+
+            let html = "";
+
+            users.forEach(user => {
+
+                let status = "";
+
+                if (user.online) {
+
+                    status =
+                        "🟢 Online";
+                }
+
+                else if (user.lastSeen) {
+
+                    status =
+                        "⚫ Last Seen: "
+                        +
+                        formatTime(
+                            user.lastSeen
+                        );
+                }
+
+                else {
+
+                    status =
+                        "⚫ Offline";
+                }
+
+                html +=
+                    `
+<div
+class="chat-user"
+
+onclick=
+"openChat(
+'${user.email}'
+)">
+
+<b>
+${user.name}
+</b>
+
+<br>
+
+<small>
+${status}
+</small>
+
+</div>
+`;
+            });
+
+            document
+                .getElementById(
+                    "chatUsersList"
+                )
+                .innerHTML =
+                html;
+        }
+
+        loadUsers();
+
+
+        // OPEN CHAT
+
+        function openChat(email) {
+
+            selectedUser =
+                users.find(
+                    user =>
+                        user.email ===
+                        email
+                );
+
+            let status = "";
+
+            if (selectedUser.online) {
+
+                status =
+                    "🟢 Online";
+            }
+
+            else if (
+                selectedUser.lastSeen
+            ) {
+
+                status =
+                    "⚫ Last Seen "
+                    +
+                    formatTime(
+                        selectedUser.lastSeen
+                    );
+            }
+
+            document
+                .getElementById(
+                    "chatTitle"
+                )
+                .innerText =
+
+                selectedUser.name
+                +
+                " "
+                +
+                status;
+
+            loadMessages();
+        }
+
+
+        // LOAD MESSAGES
+
+        function loadMessages() {
+
+            if (!selectedUser) {
+                return;
+            }
+
+            let chatKey =
+
+                [
+                    currentUser.email,
+                    selectedUser.email
+                ]
+                    .sort()
+                    .join("_");
+
+
+            let chats =
+                JSON.parse(
+                    localStorage.getItem(
+                        chatKey
+                    )
+                )
+                || [];
+
+            let html = "";
+
+            chats.forEach(chat => {
+
+                html +=
+                    `
+<div
+class="${chat.sender ===
+                        currentUser.email
+                        ?
+                        'my-message'
+                        :
+                        'other-message'
+                    }">
+
+${chat.message}
+
+<div
+style="
+font-size:12px;
+margin-top:5px;
+opacity:0.8;
+">
+
+${formatTime(chat.time)}
+
+</div>
+
+</div>
+`;
+            });
+
+
+            document
+                .getElementById(
+                    "messages"
+                )
+                .innerHTML =
+                html;
+
+
+            let msgBox =
+                document
+                    .getElementById(
+                        "messages"
+                    );
+
+            msgBox.scrollTop =
+                msgBox.scrollHeight;
+        }
+
+
+        // SEND MESSAGE
+
+        function sendMessage() {
+
+            if (!selectedUser) {
+
+                alert(
+                    "Select user first"
+                );
+
+                return;
+            }
+
+            let input =
+                document
+                    .getElementById(
+                        "messageInput"
+                    );
+
+            let message =
+                input.value.trim();
+
+            if (message === "") {
+                return;
+            }
+
+
+            let chatKey =
+
+                [
+                    currentUser.email,
+                    selectedUser.email
+                ]
+                    .sort()
+                    .join("_");
+
+
+            let chats =
+                JSON.parse(
+                    localStorage.getItem(
+                        chatKey
+                    )
+                )
+                || [];
+
+
+            chats.push({
+
+                sender:
+                    currentUser.email,
+
+                message:
+                    message,
+
+                time:
+                    Date.now()
+
+            });
+
+
+            localStorage.setItem(
+                chatKey,
+                JSON.stringify(
+                    chats
+                )
+            );
+
+
+            // NOTIFICATIONS
+
+            let allUsers =
+                JSON.parse(
+                    localStorage.getItem(
+                        "users"
+                    )
+                )
+                || [];
+
+
+            allUsers =
+                allUsers.map(user => {
+
+                    if (
+                        user.email ===
+                        selectedUser.email
+                    ) {
+
+                        if (
+                            !user.notifications
+                        ) {
+                            user.notifications =
+                                [];
+                        }
+
+                        user.notifications.push(
+                            "💬 New message from "
+                            +
+                            currentUser.name
+                        );
+                    }
+
+                    return user;
+                });
+
+
+            localStorage.setItem(
+                "users",
+                JSON.stringify(
+                    allUsers
+                )
+            );
+
+
+            input.value = "";
+
+            loadMessages();
+        }
+
+
+        // AUTO REFRESH
+
+        setInterval(
+            () => {
+
+                users =
+                    JSON.parse(
+                        localStorage.getItem(
+                            "users"
+                        )
+                    )
+                    || [];
+
+                users =
+                    users.filter(
+                        user =>
+                            user.email !==
+                            currentUser.email
+                    );
+
+                loadUsers();
+
+                if (selectedUser) {
+                    openChat(
+                        selectedUser.email
+                    );
+                }
+
+            },
+            1000
+        );
+
+    </script>
+
+</body>
+
+</html>

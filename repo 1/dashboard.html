@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width,
+initial-scale=1.0">
+
+    <title>Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+
+        <!-- NAVBAR -->
+
+        <div class="navbar">
+
+            <h2>
+                My App
+            </h2>
+
+            <div id="navButtons">
+
+            </div>
+
+        </div>
+
+
+        <!-- DASHBOARD -->
+
+        <div class="dashboard-card">
+
+            <img id="profileImage" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-pic">
+
+            <h1 id="welcomeText">
+
+                Welcome
+
+            </h1>
+
+            <p>
+                You are successfully
+                logged in 🎉
+            </p>
+
+        </div>
+
+
+        <!-- NOTIFICATIONS -->
+
+        <div class="users-card">
+
+            <h2>
+
+                🔔 Notifications
+                (
+                <span id="notifCount">
+                    0
+                </span>
+                )
+
+            </h2>
+
+            <div id="notificationsList">
+
+            </div>
+
+            <button onclick="clearNotifications()">
+
+                Clear Notifications
+
+            </button>
+
+        </div>
+
+
+        <!-- USERS -->
+
+        <div class="users-card">
+
+            <h2>
+                Registered Users
+            </h2>
+
+            <div id="usersList">
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // CURRENT USER
+
+        let currentUser =
+            JSON.parse(
+                localStorage.getItem(
+                    "currentUser"
+                )
+            );
+
+        if (!currentUser) {
+
+            window.location.href =
+                "index.html";
+        }
+
+
+        // USERS
+
+        let users =
+            JSON.parse(
+                localStorage.getItem(
+                    "users"
+                )
+            )
+            || [];
+
+
+        // REFRESH CURRENT USER
+
+        currentUser =
+            users.find(
+                u =>
+                    u.email ===
+                    currentUser.email
+            );
+
+
+        // THEME
+
+        let savedTheme =
+            localStorage.getItem(
+                "theme"
+            );
+
+        if (
+            savedTheme ===
+            "light"
+        ) {
+
+            document.body.classList
+                .add(
+                    "light-mode"
+                );
+        }
+
+
+        // FORMAT TIME
+
+        function formatTime(timestamp) {
+
+            let date =
+                new Date(timestamp);
+
+            return date.toLocaleTimeString(
+                [],
+                {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }
+            );
+        }
+
+
+        // THEME TOGGLE
+
+        function toggleTheme() {
+
+            document.body.classList
+                .toggle(
+                    "light-mode"
+                );
+
+            if (
+                document.body.classList
+                    .contains(
+                        "light-mode"
+                    )
+            ) {
+
+                localStorage.setItem(
+                    "theme",
+                    "light"
+                );
+            }
+
+            else {
+
+                localStorage.setItem(
+                    "theme",
+                    "dark"
+                );
+            }
+        }
+
+
+        // NAVBAR
+
+        let navHTML =
+
+            `
+<button onclick=
+"toggleTheme()">
+🌙 Theme
+</button>
+
+<button onclick=
+"goToProfile()">
+Profile
+</button>
+
+<button onclick=
+"goToChat()">
+Chat
+</button>
+`;
+
+
+        if (
+            currentUser.email
+            ===
+            "admin@gmail.com"
+        ) {
+
+            navHTML +=
+
+                `
+<button onclick=
+"goToAdmin()">
+Admin
+</button>
+`;
+        }
+
+
+        navHTML +=
+
+            `
+<button onclick=
+"logout()">
+Logout
+</button>
+`;
+
+
+        document
+            .getElementById(
+                "navButtons"
+            )
+            .innerHTML =
+            navHTML;
+
+
+        // PROFILE
+
+        document
+            .getElementById(
+                "welcomeText"
+            )
+            .innerText =
+            "Welcome, "
+            +
+            currentUser.name;
+
+
+        if (currentUser.image) {
+
+            document
+                .getElementById(
+                    "profileImage"
+                )
+                .src =
+                currentUser.image;
+        }
+
+
+        // USERS LIST
+
+        function loadUsers() {
+
+            users =
+                JSON.parse(
+                    localStorage.getItem(
+                        "users"
+                    )
+                )
+                || [];
+
+            let html = "";
+
+            users.forEach(user => {
+
+                let status = "";
+
+                if (user.online) {
+
+                    status =
+                        "🟢 Online";
+                }
+
+                else if (user.lastSeen) {
+
+                    status =
+                        "⚫ Last Seen: "
+                        +
+                        formatTime(
+                            user.lastSeen
+                        );
+                }
+
+                else {
+
+                    status =
+                        "⚫ Offline";
+                }
+
+                html +=
+                    `
+<div
+style="
+padding:12px;
+background:
+rgba(255,255,255,0.1);
+margin-top:10px;
+border-radius:10px;
+color:white;
+">
+
+<b>Name:</b>
+${user.name}
+
+<br>
+
+<b>Email:</b>
+${user.email}
+
+<br>
+
+${status}
+
+</div>
+`;
+            });
+
+            document
+                .getElementById(
+                    "usersList"
+                )
+                .innerHTML =
+                html;
+        }
+
+        loadUsers();
+
+
+        // NOTIFICATIONS
+
+        loadNotifications();
+
+        function loadNotifications() {
+
+            let notifications =
+                currentUser.notifications
+                || [];
+
+            document
+                .getElementById(
+                    "notifCount"
+                )
+                .innerText =
+                notifications.length;
+
+            let html = "";
+
+            notifications.forEach(
+                notif => {
+
+                    html +=
+                        `
+<div
+style="
+padding:12px;
+margin-top:10px;
+background:
+rgba(255,255,255,0.1);
+border-radius:12px;
+color:white;
+">
+
+${notif}
+
+</div>
+`;
+                });
+
+            document
+                .getElementById(
+                    "notificationsList"
+                )
+                .innerHTML =
+                html;
+        }
+
+
+        // CLEAR NOTIFICATIONS
+
+        function clearNotifications() {
+
+            users =
+                users.map(user => {
+
+                    if (
+                        user.email ===
+                        currentUser.email
+                    ) {
+
+                        user.notifications =
+                            [];
+                    }
+
+                    return user;
+                });
+
+
+            localStorage.setItem(
+                "users",
+                JSON.stringify(
+                    users
+                )
+            );
+
+            location.reload();
+        }
+
+
+        // FUNCTIONS
+
+        function goToProfile() {
+            window.location.href =
+                "profile.html";
+        }
+
+        function goToChat() {
+            window.location.href =
+                "chat.html";
+        }
+
+        function goToAdmin() {
+            window.location.href =
+                "admin.html";
+        }
+
+
+        // LOGOUT WITH LAST SEEN
+
+        function logout() {
+
+            users =
+                users.map(user => {
+
+                    if (
+                        user.email ===
+                        currentUser.email
+                    ) {
+
+                        user.online =
+                            false;
+
+                        user.lastSeen =
+                            Date.now();
+                    }
+
+                    return user;
+                });
+
+
+            localStorage.setItem(
+                "users",
+                JSON.stringify(
+                    users
+                )
+            );
+
+            localStorage.removeItem(
+                "currentUser"
+            );
+
+            window.location.href =
+                "index.html";
+        }
+
+
+        // AUTO REFRESH
+
+        setInterval(
+            () => {
+
+                loadUsers();
+
+            },
+            1000
+        );
+
+    </script>
+
+</body>
+
+</html>
